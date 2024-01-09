@@ -41,3 +41,15 @@ if __name__ == "__main__":
     print("")
 
     print(requests.get("http://127.0.0.1:9999/item/list").json())
+    
+    print("")
+    
+    print(requests.put("http://127.0.0.1:9999/update/-1").json())
+   
+    print("")
+
+    print(requests.put("http://127.0.0.1:9999/update/0?price=-1").json())
+
+    print("")
+
+    print(requests.put("http://127.0.0.1:9999/update/0?name=SuperDuperHammer").json())

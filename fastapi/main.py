@@ -1,9 +1,12 @@
 from enum import Enum
-from fastapi import FastAPI, HTTPException
-from uvicorn import run
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Path, Query
+from pydantic import BaseModel, Field
 
-app = FastAPI()
+app = FastAPI(
+    title="Open API",
+    description="Ref https://youtu.be/SORiTsvnU28?si=CB0RkiNq8pJdQ0Sj",
+    version="1.0.0",
+)
 
 
 class Category(Enum):
@@ -12,11 +15,11 @@ class Category(Enum):
 
 
 class Item(BaseModel):
-    name: str
-    price: float
-    count: int
-    id: int
-    category: Category
+    name: str = Field(description="Name of the item.")
+    price: float = Field(description="Price of the item in Euro.")
+    count: int = Field(description="Amount of instances of this item in stock.")
+    id: int = Field(description="Unique integer that specifies this item.")
+    category: Category = Field(description="Category this item belongs to.")
 
 
 items = {
@@ -89,10 +92,31 @@ def add_item(item: Item) -> dict[str, Item]:
 
 @app.put("/update/{item_id}")
 def update_item(
-    item_id: int,
-    name: str | None = None,
-    price: float | None = None,
-    count: int | None = None,
+    item_id: int = Path(
+        title="Item ID", description="Unique integer that specifies an item.", ge=0
+    ),
+    name: str
+    | None = Query(
+        title="Name",
+        description="New name of the item.",
+        default=None,
+        min_length=1,
+        max_length=8,
+    ),
+    price: float
+    | None = Query(
+        title="Price",
+        description="New price of the item in Euro.",
+        default=None,
+        gt=0.0,
+    ),
+    count: int
+    | None = Query(
+        title="Count",
+        description="New amount of instances of this item in stock.",
+        default=None,
+        ge=0,
+    ),
 ) -> dict[str, Item]:
     if item_id not in items:
         raise HTTPException(
@@ -123,6 +147,3 @@ def delete_item(item_id: int) -> dict[str, Item]:
 
     item = items.pop(item_id)
     return {"deleted": item}
-
-
-# run(app, host="127.0.0.1", port=9999)
